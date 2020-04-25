@@ -13,19 +13,56 @@
 
 package com.javarush.task.task31.task3102;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.PriorityQueue;
 
-/*
+/* 
 Находим все файлы
 */
 public class Solution {
     public static List<String> getFileTree(String root) throws IOException {
-        return null;
+        File path = new File(root);
+        List<String> namePathToFiles = new ArrayList<>();
+        PriorityQueue <File> filesQueue = new PriorityQueue<>();
+        
+        Collections.addAll(filesQueue, path.listFiles());
+
+        while (!filesQueue.isEmpty()){
+
+            File currentFile = filesQueue.remove();
+            if(!currentFile.isDirectory()){
+                namePathToFiles.add(currentFile.getAbsolutePath());
+            } else {
+                Collections.addAll(filesQueue, currentFile.listFiles());
+            }
+        }
+        
+//        List<File> filesTest = new ArrayList<>();
+//        Collections.addAll(filesTest, path.listFiles());
+//
+//       while (!filesTest.isEmpty()){
+//
+//            File currentFile = filesTest.remove(0);
+//            if(!currentFile.isDirectory()){
+//                namePathToFiles.add(currentFile.getAbsolutePath());
+//            } else {
+//                Collections.addAll(filesTest, currentFile.listFiles());
+//            }
+//        }
+
+        return namePathToFiles;
 
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
+
+        for(String s : getFileTree("/home/bns/Documents/example")){
+            System.out.println(s);
+        }
 
     }
 }
