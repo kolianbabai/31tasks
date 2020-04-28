@@ -20,14 +20,74 @@
 
 package com.javarush.task.task31.task3101;
 
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.PriorityQueue;
+import java.util.Queue;
+
 /*
 Проход по дереву файлов
 */
 public class Solution {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
+
+        File folder = new File(args[0]);
+        File source = new File(args[1]);
+        File destination = new File(source.getParent() + "/allFilesContent.txt");
+
+        FileUtils.renameFile(source, destination);
+
+        PriorityQueue<File> fileNamesQueue = new PriorityQueue<>();
+        PriorityQueue<File> fileNamesQueueResult = new PriorityQueue<>();
+        ArrayList<String> namesFileFinal = new ArrayList<>();
+
+
+        queueWithFiles(fileNamesQueue, fileNamesQueueResult, folder);
+
+        for(File filesInDir : fileNamesQueueResult){
+            if(filesInDir.length() <= 50){
+                namesFileFinal.add(filesInDir.getAbsolutePath());
+            }
+        }
+
+        FileOutputStream outputStream = new FileOutputStream(destination);
+        InputStream inputStream = null;
+        for(String s : namesFileFinal){
+                inputStream = new FileInputStream(s);
+
+                while (inputStream.available() > 0){
+                    outputStream.write(inputStream.read());
+                }
+                outputStream.write(("\n").getBytes());
+
+            inputStream.close();
+        }
+        outputStream.close();
 
     }
+
+    private static Queue<File> queueWithFiles(Queue <File> filesQueue, Queue <File> filesResult, File path){
+
+        Collections.addAll(filesQueue, path.listFiles());
+
+        while (!filesQueue.isEmpty()){
+
+            File currentFile = filesQueue.remove();
+
+            if (!currentFile.isDirectory()) {
+                filesResult.add(currentFile);
+            } else {
+                queueWithFiles(filesQueue, filesResult, currentFile);
+            }
+
+        }
+
+        return filesQueue;
+    }
 }
+
 
 package com.javarush.task.task31.task3101;
 
@@ -45,5 +105,49 @@ public class FileUtils {
 
     public static boolean isExist(File file) {
         return file.exists();
+    }
+}
+
+Вариант №2
+package com.javarush.task.task31.task3101;
+
+import java.io.*;
+import java.nio.file.Path;
+import java.util.*;
+
+/*
+Проход по дереву файлов
+*/
+public class Solution {
+    public static void main(String[] args) throws IOException {
+        File folder = new File(args[0]);
+        File source = new File(args[1]);
+        File destination = new File(source.getParent() + "/allFilesContent.txt");
+        FileUtils.renameFile(source, destination);
+        FileInputStream inputStream;
+        Map<String, String> map = new TreeMap<>();
+        Queue<File> queue = new PriorityQueue<>();
+        Collections.addAll(queue, folder.listFiles());
+
+        while (!queue.isEmpty()){
+            File currentFile = queue.remove();
+            if (currentFile.isDirectory()){
+                Collections.addAll(queue, currentFile.listFiles());
+            }else if(currentFile.length()<=50) {
+                map.put(currentFile.getName(), currentFile.getAbsolutePath());
+            }
+        }
+
+
+        FileOutputStream fileOutputStream = new FileOutputStream(destination, true);
+        for (Map.Entry<String, String> value : map.entrySet()){
+            inputStream = new FileInputStream(value.getValue());
+            byte[] buff = new byte[inputStream.available()];
+            int count = inputStream.read(buff);
+            fileOutputStream.write(buff);
+            fileOutputStream.write("\n".getBytes());
+            inputStream.close();
+        }
+        fileOutputStream.close();
     }
 }
