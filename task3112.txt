@@ -40,7 +40,16 @@ public class Solution {
         }
     }
 
-    public static Path downloadFile(String urlString, Path downloadDirectory) throws IOException {
-        // implement this method
+   public static Path downloadFile(String urlString, Path downloadDirectory) throws IOException {
+        URL url = new URL(urlString);
+        Path fileName = Paths.get(url.getPath()).getFileName();
+        Path fileDir = Paths.get(downloadDirectory.toString());
+        InputStream inputStream = url.openStream();
+        Path tempFile = Files.createTempFile("temp-", ".txt");
+        Files.copy(inputStream, tempFile, StandardCopyOption.REPLACE_EXISTING);
+
+        Path newName = Paths.get(fileDir.toString() + "/" +fileName.toString());
+        downloadDirectory = Files.move(tempFile, newName, StandardCopyOption.REPLACE_EXISTING);
+        return downloadDirectory;
     }
 }
